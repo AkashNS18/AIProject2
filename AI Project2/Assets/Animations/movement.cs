@@ -1,0 +1,147 @@
+﻿using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class movement: MonoBehaviour
+{
+   
+    public bool isGrounded;
+    public bool isCrouching;
+
+    private float speed;
+    private float w_speed = 0.05f;
+    private float r_speed = 0.1f;
+    private float c_speed = 0.025f;
+    public float rotSpeed;
+    public float jumpHeight;
+    Rigidbody rb;
+    Animator anim;
+    CapsuleCollider col_size;
+    public GameObject Player;
+
+    // Start is called before the first frame update
+    void Start()
+    {
+
+        rb = Player.GetComponent<Rigidbody>();
+        anim = Player.GetComponent<Animator>();
+        col_size = Player.GetComponent<CapsuleCollider>();
+        isGrounded = true;
+        isCrouching = false;
+    }
+
+    // Update is called once per frame
+    void Update()
+    {
+        //Toggle Crouch
+        if (Input.GetKeyDown(KeyCode.LeftControl))
+        {
+            if (isCrouching)
+            {
+                isCrouching = false;
+                anim.SetBool("isCrouching", false);
+                col_size.height = 2;
+                col_size.center = new Vector3(0, 1, 0);
+            }
+            else
+            { 
+                isCrouching = true;
+                anim.SetBool("isCrouching", true);
+                speed = c_speed;
+                col_size.height = 1;
+                col_size.center = new Vector3(0, 0.5f, 0);
+            }
+        }
+
+        var z = Input.GetAxis("Vertical") * speed;
+        var y = Input.GetAxis("Horizontal") * rotSpeed;
+
+        transform.Translate(0, 0, z);
+        transform.Rotate(0, y, 0);
+
+        if (Input.GetKey(KeyCode.Space) && isGrounded == true)
+        {
+            rb.AddForce(0, jumpHeight, 0);
+            anim.SetTrigger("isJumping");
+            isCrouching = false;
+            isGrounded = false;
+        }
+
+        if (isCrouching)
+        {
+            if (Input.GetKey(KeyCode.W))
+            {
+                anim.SetBool("isWalking", true);
+                anim.SetBool("isRunning", false);
+                anim.SetBool("isIdle", false);
+                Player.transform.Translate(5f, 0, 0);
+
+            }
+            else if (Input.GetKey(KeyCode.S))
+            {
+                anim.SetBool("isWalking", true);
+                anim.SetBool("isRunning", false);
+                anim.SetBool("isIdle", false);
+            }
+            else
+            {
+                anim.SetBool("isWalking", false);
+                anim.SetBool("isRunning", false);
+                anim.SetBool("isIdle", true);
+            }
+        }
+
+        else if (Input.GetKey(KeyCode.LeftShift))
+        {
+            speed = r_speed;
+            //Running Controls
+            if (Input.GetKey(KeyCode.W))
+            {
+                anim.SetBool("isWalking", false);
+                anim.SetBool("isIdle", false);
+                anim.SetBool("isRunning", true);
+            }
+            else if (Input.GetKey(KeyCode.S))
+            {
+                anim.SetBool("isWalking", false);
+                anim.SetBool("isIdle", false);
+                anim.SetBool("isRunning", true);
+            }
+            else
+            {
+                anim.SetBool("isWalking", false);
+                anim.SetBool("isRunning", false);
+                anim.SetBool("Idle", true);
+            }
+        }
+        else if (!isCrouching)
+        {
+            speed = w_speed;
+            //Standing Controls
+            if (Input.GetKey(KeyCode.W))
+            {
+                anim.SetBool("isWalking", true);
+                anim.SetBool("isIdle", false);
+                anim.SetBool("isRunning", false);
+            }
+            else if (Input.GetKey(KeyCode.S))
+            {
+                anim.SetBool("isWalking", true);
+                anim.SetBool("isIdle", false);
+                anim.SetBool("isRunning", false);
+            }
+            else
+            {
+                anim.SetBool("isWalking", false);
+                anim.SetBool("isRunning", false);
+                anim.SetBool("isIdle", true);
+            }
+        }
+    }
+
+    private void OnCollisionEnter()
+    {
+        isGrounded = true;
+    }
+}
+ 
